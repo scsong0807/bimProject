@@ -1,0 +1,240 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>shanghai qihoubim</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- MetisMenu CSS -->
+    <link href="../vendor/metisMenu/metisMenu.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="../dist/css/sb-admin-2.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+             
+                <div class="login-panel panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">系统登陆</h3>
+                    </div>
+                    <div class="panel-body">
+                        <fieldset>
+                            <div class="form-group">
+                                <input class="form-control" id="txtEmail" placeholder="请输入用户名" name="email" type="email" autofocus>
+                            </div>
+                            <div class="form-group">
+                                <input class="form-control" id="txtPwd" placeholder="请输入密码" name="password" type="password" value="">
+                            </div>
+                            <div class="checkbox" style="display:none;">
+                                <label>
+                                    <input name="remember" type="checkbox" value="Remember Me">Remember Me
+                                </label>
+                            </div>
+                            <!-- Change this to a button or input when using this as a form -->
+                            <div class="form-group">
+
+                            </div>
+
+                            <button type="button" id="btnLogin" class="btn btn-success" style="width:40%;">登陆</button>
+                            <button type="button" id="btnForgetPwd" class="btn btn-default disabled pull-right" style="width:40%;">忘记密码</button>
+                        </fieldset>
+
+                        <div class="modal fade in" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none; padding-right: 17px;">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                        <h4 class="modal-title" id="myModalLabel">提示</h4>
+                                    </div>
+                                    <div class="modal-body" style="text-align:center;">
+                                        登陆失败
+                                    </div>
+                                    <div class="modal-footer">
+                                        
+                                        <button type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+                                    </div>
+                                </div>
+                                <!-- /.modal-content -->
+                            </div>
+                            <!-- /.modal-dialog -->
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="divError" class="alert alert-danger alert-dismissable center-block" style="width:30%; display:none;">
+        <button type="button" class="close" id="btnCloseAlert">×</button>
+        <span id="spanErrorInfo">flkasjflskjflkasjflkafjalk</span>
+    </div>
+
+    <!-- jQuery -->
+    <script src="../vendor/jquery/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="../vendor/bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="../vendor/metisMenu/metisMenu.min.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="../dist/js/sb-admin-2.js"></script>
+    <script src="../dist/js/Utility/Utility.js"></script>
+
+    <script type="text/javascript">
+
+        //mis basePage
+        //bind events
+        $(document).ready(function () {
+            console.log('1');
+            //$(this).append(buildModelHtml());
+
+            $('#btnCloseAlert').bind('click', function () {
+                $('#divError').hide();
+            });
+
+            $('#btnLogin').bind('click', function () {         
+                if (!validate()) {
+                    return;
+                }
+
+                login($('#txtEmail').val(), $('#txtPwd').val());
+
+                console.log(' do click login ');
+            });
+        });
+      
+        function validate() {
+            if (!$('#txtEmail').val()) {
+                setErrorAndShow('请输入用户名');
+                $('#txtEmail')[0].focus();
+                return false;
+            }
+            else {
+                $('#divError').hide();
+            }
+
+            if (!$('#txtPwd').val()) {
+                setErrorAndShow('请输入密码');
+                $('#txtPwd')[0].focus();
+                return false;
+            }
+            else {
+                $('#divError').hide();
+            }
+
+            return true;
+        }
+
+        function login(userName, psw) {
+            $.ajax({
+                url: bimConfig.APIDomainUrl + 'video/Login',
+                type: 'POST', //GET
+                async: true,    //或false,是否异步
+                data: {
+                    userName: userName,
+                    psw: psw,
+                    ticket: bimCookie.get('ticket')
+                },
+                dataType: 'json',    //返回的数据格式：json/xml/html/script/jsonp/text
+                beforeSend: function (xhr) {
+                    console.log(xhr)
+                    console.log('发送前')
+                },
+                success: function (data, textStatus, jqXHR) {
+                    if (data) {
+
+                        var obj = JSON.parse(data);
+                        //to do login
+                        if (obj && obj.Result) {
+                            
+                            bimCookie.set('ticket', obj.Ticket);
+                            bimCookie.set('userInfo', JSON.stringify( obj.User));
+                            document.location = 'main.html';
+                        }
+                        else {
+                            setErrorAndShow('登陆失败');
+                            $('#txtPwd').val('');
+                            $('#txtPwd')[0].focus();
+                        }
+                    }
+                },
+                error: function (xhr, textStatus) {
+                    console.log('错误')
+                    console.log(xhr)
+                    console.log(textStatus)
+                },
+                complete: function () {
+                    console.log('结束')
+                }
+            });
+        }
+
+        function setErrorAndShow(errorInfo) {
+            $('#spanErrorInfo')[0].innerHTML = '';
+            $('#spanErrorInfo')[0].innerHTML = errorInfo;
+            $('#divError').show();
+        }
+
+        function buildModelHtml() {
+
+            //var html = '<div class="modal fade" id="myCustomerModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">';
+            //        html += '<div class="modeal-dialog">';
+            //            html += '<div class="dodal-content">';
+            //                html += '<div class="modal-header">';
+            //                    html += '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>'
+            //                    html += '<h4 class="modal-title" id="myModalLabel">Modal title</h4>';
+            //                html += '</div>';//modal-header
+
+            //                html += '<div class="modal-body">';
+            //                    html += 'to do insetHtmlText';
+            //                html += '</div>';//modal-body
+
+            //                html += '<div class="modal-footer">';
+            //                    html += '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>'
+            //                    html += '<button type="button" class="btn btn-primary" data-dismiss="modal">Save changes</button>';
+            //                html += '</div>';//modal-footer
+            //            html += '</div>';//modal-content
+            //        html += '</div>';//modal-dialog
+            //    html += '</div>';//modal
+
+            //return html;
+
+            return '<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content">               <div class="modal-header">                   <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>                   <h4 class="modal-title" id="myModalLabel">Modal title</h4>               </div>               <div class="modal-body">                   Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.               </div>               <div class="modal-footer">                   <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>                   <button type="button" class="btn btn-primary" data-dismiss="modal">Save changes</button>               </div>           </div>           <!-- /.modal-content --></div><!-- /.modal-dialog --></div>';
+        }
+
+
+    </script>
+
+
+
+</body>
+
+</html>

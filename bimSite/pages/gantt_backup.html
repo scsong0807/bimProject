@@ -1,0 +1,189 @@
+﻿<!DOCTYPE html>
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+	<title>Split task</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>shanghai qihoubim</title>
+
+    <!-- Bootstrap Core CSS -->
+</head>
+<script src="../js/codebase/dhtmlxgantt.js" type="text/javascript" charset="utf-8"></script>
+<script src="../js/codebase/locale/locale_cn.js"></script>
+<link rel="stylesheet" href="../js/codebase/skins/dhtmlxgantt_meadow.css" type="text/css" media="screen" title="no title" charset="utf-8">
+<style type="text/css">
+		html, body {
+			margin: 0px;
+			padding: 0px;
+			height: 100%;
+			overflow: hidden;
+		}
+
+		.baseline {
+			position: absolute;
+			border-radius: 2px;
+			opacity: 0.6;
+			margin-top: -7px;
+			height: 12px;
+			background: #ffd180;
+			border: 1px solid rgb(255, 153, 0);
+		}
+
+			/* move task lines upper */
+		.gantt_task_line, .gantt_line_wrapper {
+			margin-top: -9px;
+		}
+
+		.gantt_side_content {
+			margin-bottom: 7px;
+		}
+
+		.gantt_task_link .gantt_link_arrow {
+			margin-top: -10px
+		}
+
+		.gantt_side_content.gantt_right {
+			bottom: 0;
+		}
+</style>
+<body  onresize="modSampleHeight()" onload="modSampleHeight()">
+    <div id="gantt_here" style='width:100%; height:100%'></div>
+
+
+
+<script type="text/javascript">
+    function modSampleHeight() {
+        var headHeight = 100;
+        var sch = document.getElementById("gantt_here");
+        sch.style.height = (parseInt(document.body.offsetHeight) - headHeight) + "px";
+        var contbox = document.getElementById("contbox");
+        contbox.style.width = (parseInt(document.body.offsetWidth) - 300) + "px";
+
+        gantt.setSizes();
+    }
+    gantt.config.task_height = 16;
+    gantt.config.row_height = 40;
+    gantt.config.scale_height = 60;
+    gantt.config.date_scale = "%d";
+    gantt.config.autoscroll = true;
+    gantt.config.buttons_left = ['dhx_save_btn'];
+    gantt.config.buttons_right = ['dhx_cancel_btn', 'dhx_delete_btn'];
+    gantt.config.xml_date = "%Y-%m-%d";
+    gantt.config.task_date = "%Y-%m-%d";
+    gantt.config.subscales = [
+        { unit: "month", step: 1, date: "%Y年%m月" },
+        { unit: "year", step: 1, date: "%Y年" }
+    ];
+    gantt.config.columns = [
+  { name: "text", label: "任务名称", tree: false, width: '*' },
+  { name: "add", align: "center", width: 100 },
+    ];
+    gantt.config.grid_width = 300;
+    gantt.locale.labels.section_planstart = "计划开始日期";
+    gantt.locale.labels.section_planend = "计划结束日期";
+    gantt.locale.labels.section_actualstart = "实际开始日期";
+    gantt.locale.labels.section_actualend = "实际结束日期";
+    gantt.locale.labels.section_text = "标题";
+    gantt.locale.labels.section_description = "详细描述";
+    gantt.config.lightbox.sections = [
+        { name: "text", type: "textarea", map_to: "text", height: 30 },
+        { name: "description", type: "textarea", map_to: "description", height: 60 },
+        { name: "planstart", type: "textarea", map_to: "plan_start_date", height: 30 },
+        { name: "planend", type: "textarea", map_to: "plan_end_date", height: 30 },
+        { name: "actualstart", type: "textarea", map_to: "actual_start_date", height: 30 },
+        { name: "actualend", type: "textarea", map_to: "actual_end_date", height: 30 },
+           //{ name: "plan", type: "time", map_to: { start_date: "plan_start_date", end_date: "plan_end_date" }, time_format: ["%Y", "%m", "%d"], year_range: [2000, 2100] },//出错
+           //{ name: "actual", type: "time", map_to: { start_date: "actual_start_date", end_date: "actual_end_date" }, time_format: ["%Y", "%m", "%d"], year_range: [1988, 3000] },//出错
+           
+    ];
+    
+    gantt.addTaskLayer(function draw_planned(task) {
+        if (task.actual_start_date != "" && task.actual_end_date != "") {
+            var startdate = gantt.date.parseDate(task.actual_start_date, "xml_date");
+            var enddate = gantt.date.parseDate(task.actual_end_date, "xml_date");
+            var sizes = gantt.getTaskPosition(task, startdate, enddate);
+            var el = document.createElement('div');
+            el.className = 'baseline';
+            el.style.left = sizes.left + 'px';
+            el.style.width = sizes.width + 'px';
+            el.style.top = sizes.top + gantt.config.task_height + 13 + 'px';
+            return el;
+        }
+        return false;
+    });
+    gantt.templates.task_class = function (start, end, task) {
+        if (task.actual_end_date) {
+            var classes = ['has-baseline'];
+            if (end.getTime() > (new Date(task.actual_end_date)).getTime()) {
+                classes.push('overdue');
+            }
+            return classes.join(' ');
+        }
+        //if (task.planinterval)
+        //    return "complex_gantt_bar";
+    };
+	//gantt.attachEvent("onTaskLoading", function (task) {
+	//    //task.actual_start_date = gantt.date.parseDate(task.actual_start_date, "xml_date");
+	//    //task.actual_end_date = gantt.date.parseDate(task.actual_end_date, "xml_date");
+	//    //return true;
+	//});
+	gantt.init("gantt_here");
+	gantt.load("http://www.shqhbim.com/bimAPI/Schedule/GetGantList", "json");
+	var dp = new dataProcessor("http://www.shqhbim.com/bimAPI/Schedule/UpdateGanttData");//dhtmlxGantt保存变化，包括添加、更新、删除
+	dp.init(gantt);
+    //比大
+    function tab1(date1, date2) {
+        var oDate1 = new Date(date1);
+        var oDate2 = new Date(date2);
+        if (oDate1.getTime() > oDate2.getTime()) {
+           return date1
+        } else {
+            return date2
+        }
+    }
+    //比小
+    function tab2(date1, date2) {
+        var oDate1 = new Date(date1);
+        var oDate2 = new Date(date2);
+        if (oDate1.getTime() > oDate2.getTime()) {
+            return date2
+        } else {
+            return date1
+        }
+    }
+    
+    function datedifference(d1,d2)
+    {
+        var date1 = new Date(d1);  //开始时间
+        var date2 = new Date(d2);    //结束时间
+        var date3 = date2.getTime() - date1.getTime()  //时间差的毫秒数
+
+
+        //计算出相差天数
+        var days = Math.floor(date3 / (24 * 3600 * 1000))
+        return days;
+    }
+
+	//gantt.parse({
+	//	"data":[
+	//		{"id":1, "text":"测试标题", 
+	//		"start_date":"2013-04-01", 
+	//		"end_date": "2013-04-08",
+	//		"plan_start_date": "2013-04-03",
+	//		"plan_end_date": "2013-04-07",
+	//		"actual_start_date": "2013-04-01",
+	//		"actual_end_date": "2013-04-05",
+    //            "description":"123",
+	//		splitStart: 5,
+	//		splitEnd: 5,
+    //            pdate:2,
+    //            //duration: "7", "open": true,
+	//		}
+	//	]
+	//});
+</script>
+</body>
